@@ -1,0 +1,35 @@
+sudo: false
+language: c
+
+addons:
+    apt_packages:
+        - lib32stdc++6
+
+env:
+    - SOURCEMOD=1.7
+    - SOURCEMOD=1.8
+
+before_script:
+    - mkdir build && cd build
+    - wget "http://www.sourcemod.net/latest.php?version=$SOURCEMOD&os=linux" -O sourcemod-$SOURCEMOD-linux.tar.gz
+    - tar -xzf sourcemod-$SOURCEMOD-linux.tar.gz
+    - cd addons/sourcemod/scripting
+    - chmod +x spcomp
+    - cp -R $TRAVIS_BUILD_DIR/addons/sourcemod/scripting/* .
+
+script: ./compile.sh ircrelay.sp ircrelay-admin.sp ircrelay-bacon.sp ircrelay-chat.sp ircrelay-game.sp ircrelay-steam.sp
+
+before_deploy:
+    - cp -R compiled/* $TRAVIS_BUILD_DIR/addons/sourcemod/plugins/
+    - cd $TRAVIS_BUILD_DIR
+    - tar -czf release.tar.gz addons/
+
+deploy:
+    provider: releases
+    api_key:
+        secure: LMIcUbXAP1xyu/okSFkMVKylY3zrANY9B8ckIZriLbfvdbMXg0oi02pq5SnzCi3FAHVJdIO+d5kTDCtqVbNDIAHBRHY37knArl6+y44KgGVINn5wqtDlrzXSAYTftnLKLIKF+JwrtzZYTl/hRqPQ40ethHkzj/S/wdB9nvq80A8=
+    file: release.tar.gz
+    skip_cleanup: true
+    on:
+        tags: true
+        condition: $SOURCEMOD = 1.7

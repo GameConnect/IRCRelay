@@ -1,75 +1,83 @@
-#pragma semicolon 1
-
 #include <sourcemod>
-
 #undef REQUIRE_PLUGIN
 #include <ircrelay>
 
-public Plugin:myinfo =
+#pragma newdecls required
+#pragma semicolon 1
+
+public Plugin myinfo =
 {
-	name        = "IRC Relay - Steam Module",
-	author      = "GameConnect",
-	description = "IRC Relay for SourceMod",
-	version     = IRC_VERSION,
-	url         = "http://www.gameconnect.net"
+    name        = "IRC Relay - Steam Module",
+    author      = "GameConnect",
+    description = "IRC Relay for SourceMod",
+    version     = IRC_VERSION,
+    url         = "http://www.gameconnect.net"
 };
 
-new Handle:g_hXsProfile;
-new Handle:g_hXsSteam;
+/**
+ * Globals
+ */
+ConVar g_hXsProfile;
+ConVar g_hXsSteam;
 
-public OnPluginStart()
+
+/**
+ * Plugin Forwards
+ */
+public void OnPluginStart()
 {
-	g_hXsProfile = CreateConVar("irc_xs_profile", "", "Access level needed for profile command", FCVAR_PLUGIN);
-	g_hXsSteam   = CreateConVar("irc_xs_steam",   "", "Access level needed for steam command",   FCVAR_PLUGIN);
-	
-	HookConVarChange(g_hXsProfile, ConVarChanged_ConVars);
-	HookConVarChange(g_hXsSteam,   ConVarChanged_ConVars);
-	
-	if(LibraryExists("ircrelay"))
-		OnLibraryAdded("ircrelay");
+    g_hXsProfile = CreateConVar("irc_xs_profile", "", "Access level needed for profile command");
+    g_hXsSteam   = CreateConVar("irc_xs_steam",   "", "Access level needed for steam command");
+
+    g_hXsProfile.AddChangeHook(ConVarChanged_ConVars);
+    g_hXsSteam.AddChangeHook(ConVarChanged_ConVars);
+
+    if (LibraryExists("ircrelay")) {
+        OnLibraryAdded("ircrelay");
+    }
 }
 
-public OnLibraryAdded(const String:name[])
+public void OnLibraryAdded(const char[] name)
 {
-	if(!StrEqual(name, "ircrelay"))
-		return;
-	
-	decl String:sXsProfile[2], String:sXsSteam[2];
-	GetConVarString(g_hXsProfile, sXsProfile, sizeof(sXsProfile));
-	GetConVarString(g_hXsSteam,   sXsSteam,   sizeof(sXsSteam));
-	
-	IRC_RegisterCommand("profile", IrcCommand_Profile, IRC_GetAccess(sXsProfile));
-	IRC_RegisterCommand("steam",   IrcCommand_Steam,   IRC_GetAccess(sXsSteam));
+    if (!StrEqual(name, "ircrelay")) {
+        return;
+    }
+
+    char sXsProfile[2], sXsSteam[2];
+    g_hXsProfile.GetString(sXsProfile, sizeof(sXsProfile));
+    g_hXsSteam.GetString(sXsSteam,     sizeof(sXsSteam));
+
+    IRC_RegisterCommand("profile", IrcCommand_Profile, IRC_GetAccess(sXsProfile));
+    IRC_RegisterCommand("steam",   IrcCommand_Steam,   IRC_GetAccess(sXsSteam));
 }
 
-public ConVarChanged_ConVars(Handle:convar, const String:oldValue[], const String:newValue[])
+public void ConVarChanged_ConVars(ConVar convar, const char[] oldValue, const char[] newValue)
 {
-	OnLibraryAdded("ircrelay");
+    OnLibraryAdded("ircrelay");
 }
 
 
 /**
  * IRC Commands
  */
-public IrcCommand_Profile(const String:channel[], const String:name[], const String:arg[])
+public void IrcCommand_Profile(const char[] channel, const char[] name, const char[] arg)
 {
-	decl String:sSteam[3][64];
-	ExplodeString(arg, ":", sSteam, sizeof(sSteam), sizeof(sSteam[]));
-	
-	new iFriend = 60265728 + StringToInt(sSteam[1]) + StringToInt(sSteam[2]) * 2;
-	IRC_PrivMsg(channel, "http://steamcommunity.com/profiles/765611979%d", iFriend);
+    char sSteam[3][64];
+    ExplodeString(arg, ":", sSteam, sizeof(sSteam), sizeof(sSteam[]));
+
+    int iFriend = 60265728 + StringToInt(sSteam[1]) + StringToInt(sSteam[2]) * 2;
+    IRC_PrivMsg(channel, "http://steamcommunity.com/profiles/765611979%d", iFriend);
 }
 
-public IrcCommand_Steam(const String:channel[], const String:name[], const String:arg[])
+public void IrcCommand_Steam(const char[] channel, const char[] name, const char[] arg)
 {
-	new iPos = StrContains(arg, "765611979");
-	if(iPos == -1)
-	{
-		IRC_PrivMsg(channel, "You must send a SteamCommunity URL, eg: http://steamcommunity.com/profiles/76561197970389645");
-		return;
-	}
-	
-	new iSteam  = (StringToInt(arg[iPos + 9]) - 60265728) / 2,
-			iServer = (iSteam + 60265728) * 2 == 76561197960265728 ? 0 : 1;
-	IRC_PrivMsg(channel, "STEAM_0:%d:%d", iServer, iSteam);
+    int iPos = StrContains(arg, "765611979");
+    if (iPos == -1) {
+        IRC_PrivMsg(channel, "You must send a SteamCommunity URL, eg: http://steamcommunity.com/profiles/76561197970389645");
+        return;
+    }
+
+    int iSteam  = (StringToInt(arg[iPos + 9]) - 60265728) / 2,
+        iServer = (iSteam + 60265728) * 2 == 76561197960265728 ? 0 : 1;
+    IRC_PrivMsg(channel, "STEAM_0:%d:%d", iServer, iSteam);
 }

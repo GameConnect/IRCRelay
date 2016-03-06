@@ -14,68 +14,62 @@
 #define IRC_REVERSE			22
 #define IRC_UNDERLINE		31
 
-#define IRC_VERSION			"2.5.0"
+#define IRC_VERSION			"2.5.1"
 
 enum IrcAccess
 {
-	IrcAccess_Disabled = -1,
-	IrcAccess_None,
-	IrcAccess_Voice,
-	IrcAccess_HalfOp,
-	IrcAccess_Op,
-	IrcAccess_SuperOp,
-	IrcAccess_Founder
+    IrcAccess_Disabled = -1,
+    IrcAccess_None,
+    IrcAccess_Voice,
+    IrcAccess_HalfOp,
+    IrcAccess_Op,
+    IrcAccess_SuperOp,
+    IrcAccess_Founder
 }
 
 enum IrcChannel
 {
-	IrcChannel_Public  = 1,
-	IrcChannel_Private = 2,
-	IrcChannel_Both    = 3
+    IrcChannel_Disabled = 0,
+    IrcChannel_Public   = 1,
+    IrcChannel_Private  = 2,
+    IrcChannel_Both     = 3
 }
 
-functag public IrcCommand(const String:channel[], const String:name[], const String:arg[]);
+typedef IrcCommand = function void (const char[] channel, const char[] name, const char[] arg);
 
 
 /**
  * When connected to the IRC server
  *
  * @param socket		The socket handle
- * @noreturn
  */
-forward IRC_OnConnect(Handle:socket);
+forward void IRC_OnConnect(Handle socket);
 
 /**
  * When disconnected from the IRC server
- *
- * @noreturn
  */
-forward IRC_OnDisconnect();
+forward void IRC_OnDisconnect();
 
 /**
  * When a socket error occurs
  *
  * @param errorType	The error type
  * @param errorNum	The error number
- * @noreturn
  */
-forward IRC_OnError(errorType, errorNum);
+forward void IRC_OnError(int errorType, int errorNum);
 
 /**
  * When the core is loaded
  * Useful for registering commands
- *
- * @noreturn
  */
-forward IRC_OnLoad();
+forward void IRC_OnLoad();
 
 /**
  * When socket data is received
  *
  * @param data			The data string
- * @noreturn
  */
-forward IRC_OnReceive(const String:data[]);
+forward void IRC_OnReceive(const char[] data);
 
 
 /**
@@ -84,9 +78,8 @@ forward IRC_OnReceive(const String:data[]);
  * @param type			The channel type
  * @param format		Formatting rules
  * @param ...				Variable number of format parameters
- * @noreturn
  */
-native IRC_Broadcast(IrcChannel:type, const String:format[], any:...);
+native void IRC_Broadcast(IrcChannel type, const char[] format, any ...);
 
 /**
  * Returns the access level for a specific mode
@@ -94,7 +87,7 @@ native IRC_Broadcast(IrcChannel:type, const String:format[], any:...);
  * @param mode			The mode to return the access level for
  * @return The access level for a specific mode
  */
-native IrcAccess:IRC_GetAccess(const String:mode[]);
+native IrcAccess IRC_GetAccess(const char[] mode);
 
 /**
  * Returns the client's name
@@ -103,9 +96,8 @@ native IrcAccess:IRC_GetAccess(const String:mode[]);
  * @param client		Player index.
  * @param name			Buffer to store the client's name.
  * @param maxlen		Maximum length of string buffer (includes NULL terminator).
- * @noreturn
  */
-native IRC_GetClientName(client, const String:name[], maxlen);
+native void IRC_GetClientName(int client, const char[] name, int maxlen);
 
 /**
  * Retrieves the number of players in a certain team.
@@ -113,7 +105,7 @@ native IRC_GetClientName(client, const String:name[], maxlen);
  * @param index			Team index.
  * @return					Number of players in the team.
  */
-native IRC_GetTeamClientCount(index);
+native int IRC_GetTeamClientCount(int index);
 
 /**
  * Returns the total number of teams in a game.
@@ -121,7 +113,7 @@ native IRC_GetTeamClientCount(index);
  *
  * @return					Total number of teams.
  */
-native IRC_GetTeamCount();
+native int IRC_GetTeamCount();
 
 /**
  * Retrieves the team name based on a team index.
@@ -130,17 +122,16 @@ native IRC_GetTeamCount();
  * @param index			Team index.
  * @param name			Buffer to store string in.
  * @param maxlength	Maximum length of string buffer.
- * @noreturn
  * @error				Invalid team index.
  */
-native IRC_GetTeamName(index, String:name[], maxlength);
+native void IRC_GetTeamName(intindex, char[] name, int maxlength);
 
 /**
  * Returns whether or not the bot is connected to IRC
  *
  * @return Whether or not the bot is connected to IRC
  */
-native bool:IRC_IsConnected();
+native bool IRC_IsConnected();
 
 /**
  * Sends a notice to IRC
@@ -148,9 +139,8 @@ native bool:IRC_IsConnected();
  * @param name			The receiver name
  * @param format		Formatting rules
  * @param ...				Variable number of format parameters
- * @noreturn
  */
-native IRC_Notice(const String:name[], const String:format[], any:...);
+native void IRC_Notice(const char[] name, const char[] format, any ...);
 
 /**
  * Sends a private message to IRC
@@ -158,9 +148,8 @@ native IRC_Notice(const String:name[], const String:format[], any:...);
  * @param name			The receiver name
  * @param format		Formatting rules
  * @param ...				Variable number of format parameters
- * @noreturn
  */
-native IRC_PrivMsg(const String:name[], const String:format[], any:...);
+native void IRC_PrivMsg(const char[] name, const char[] format, any ...);
 
 /**
  * Registers an IRC command
@@ -168,49 +157,47 @@ native IRC_PrivMsg(const String:name[], const String:format[], any:...);
  * @param name			The command name
  * @param callback	The command callback
  * @param access		The command access level
- * @noreturn
  */
-native IRC_RegisterCommand(const String:name[], IrcCommand:callback, IrcAccess:access = IrcAccess_None);
+native void IRC_RegisterCommand(const char[] name, IrcCommand callback, IrcAccess access = IrcAccess_None);
 
 /**
  * Sends raw IRC data
  *
  * @param format		Formatting rules
  * @param ...				Variable number of format parameters
- * @noreturn
  */
-native IRC_SendRaw(const String:format[], any:...);
+native void IRC_SendRaw(const char[] format, any ...);
 
 
-public SharedPlugin:__pl_ircrelay = 
+public SharedPlugin __pl_ircrelay =
 {
-	name = "ircrelay",
-	file = "ircrelay.smx",
-	#if defined REQUIRE_PLUGIN
-	required = 1,
-	#else
-	required = 0,
-	#endif
+    name = "ircrelay",
+    file = "ircrelay.smx",
+    #if defined REQUIRE_PLUGIN
+    required = 1,
+    #else
+    required = 0,
+    #endif
 };
 
 public __pl_ircrelay_SetNTVOptional()
 {
-	// Forwards
-	MarkNativeAsOptional("IRC_OnConnect");
-	MarkNativeAsOptional("IRC_OnDisconnect");
-	MarkNativeAsOptional("IRC_OnError");
-	MarkNativeAsOptional("IRC_OnLoad");
-	MarkNativeAsOptional("IRC_OnReceive");
-	
-	// Natives
-	MarkNativeAsOptional("IRC_Broadcast");
-	MarkNativeAsOptional("IRC_GetAccess");
-	MarkNativeAsOptional("IRC_GetClientName");
-	MarkNativeAsOptional("IRC_GetTeamClientCount");
-	MarkNativeAsOptional("IRC_GetTeamCount");
-	MarkNativeAsOptional("IRC_GetTeamName");
-	MarkNativeAsOptional("IRC_IsConnected");
-	MarkNativeAsOptional("IRC_PrivMsg");
-	MarkNativeAsOptional("IRC_RegisterCommand");
-	MarkNativeAsOptional("IRC_SendRaw");
+    // Forwards
+    MarkNativeAsOptional("IRC_OnConnect");
+    MarkNativeAsOptional("IRC_OnDisconnect");
+    MarkNativeAsOptional("IRC_OnError");
+    MarkNativeAsOptional("IRC_OnLoad");
+    MarkNativeAsOptional("IRC_OnReceive");
+
+    // Natives
+    MarkNativeAsOptional("IRC_Broadcast");
+    MarkNativeAsOptional("IRC_GetAccess");
+    MarkNativeAsOptional("IRC_GetClientName");
+    MarkNativeAsOptional("IRC_GetTeamClientCount");
+    MarkNativeAsOptional("IRC_GetTeamCount");
+    MarkNativeAsOptional("IRC_GetTeamName");
+    MarkNativeAsOptional("IRC_IsConnected");
+    MarkNativeAsOptional("IRC_PrivMsg");
+    MarkNativeAsOptional("IRC_RegisterCommand");
+    MarkNativeAsOptional("IRC_SendRaw");
 }

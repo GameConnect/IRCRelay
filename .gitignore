@@ -1,0 +1,3 @@
+.idea/
+/addons/sourcemod/plugins/*
+!addons/sourcemod/plugins/.gitkeep
