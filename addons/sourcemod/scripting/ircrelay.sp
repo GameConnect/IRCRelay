@@ -95,7 +95,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public void OnPluginStart()
 {
     // Create convars
-    CreateConVar("sm_irc_version", IRC_VERSION, "IRC Relay for SourceMod");
+    CreateConVar("sm_irc_version", IRC_VERSION, "IRC Relay for SourceMod", FCVAR_NOTIFY);
     g_hAuthPassword  = CreateConVar("irc_auth_password",  "",     "IRC Auth Password");
     g_hAuthString    = CreateConVar("irc_auth_string",    "",     "IRC Auth String");
     g_hAuthUsername  = CreateConVar("irc_auth_username",  "",     "IRC Auth Username");
