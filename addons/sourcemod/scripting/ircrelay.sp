@@ -115,10 +115,10 @@ public void OnPluginStart()
     g_hOnReceive     = CreateGlobalForward("IRC_OnReceive",    ET_Ignore, Param_String);
 
     // Create arrays and tries
-    g_hChannels      = new ArrayList(64);
-    g_hCommands      = new ArrayList(64);
+    g_hChannels      = new ArrayList(ByteCountToCells(64));
+    g_hCommands      = new ArrayList(ByteCountToCells(64));
     g_hModes         = new StringMap();
-    g_hQueue         = new ArrayList(1024);
+    g_hQueue         = new ArrayList(ByteCountToCells(1024));
 
     // Create config parser
     g_hConfigParser  = new SMCParser();

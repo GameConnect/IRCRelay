@@ -14,7 +14,7 @@
 #define IRC_REVERSE			22
 #define IRC_UNDERLINE		31
 
-#define IRC_VERSION			"2.5.2"
+#define IRC_VERSION			"2.5.3"
 
 enum IrcAccess
 {
@@ -124,7 +124,7 @@ native int IRC_GetTeamCount();
  * @param maxlength	Maximum length of string buffer.
  * @error				Invalid team index.
  */
-native void IRC_GetTeamName(intindex, char[] name, int maxlength);
+native void IRC_GetTeamName(int index, char[] name, int maxlength);
 
 /**
  * Returns whether or not the bot is connected to IRC
